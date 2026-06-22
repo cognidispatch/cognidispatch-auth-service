@@ -1,6 +1,7 @@
 name: CI — Auth Service
 
 permissions:
+  id-token: write
   contents: write
   actions: read
   checks: read
@@ -92,8 +93,6 @@ jobs:
       service_name: auth-service
       sonar_project_key: cogni-auth-service
     secrets:
-      ACR_USERNAME: ${{ secrets.ACR_USERNAME }}
-      ACR_PASSWORD: ${{ secrets.ACR_PASSWORD }}
       AZURE_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       AZURE_CLIENT_SECRET: ${{ secrets.AZURE_CLIENT_SECRET }}
       AZURE_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
