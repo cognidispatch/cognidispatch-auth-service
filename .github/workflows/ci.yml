@@ -1,6 +1,7 @@
 name: CI — Auth Service
 
 permissions:
+  id-token: write
   contents: write
   actions: read
   checks: read
@@ -62,11 +63,6 @@ jobs:
 
             NEW_TAG="v${major}.${minor}.${patch}"
             echo "tag=${NEW_TAG}" >> $GITHUB_OUTPUT
-
-            git config user.name "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git tag "$NEW_TAG"
-            git push origin "$NEW_TAG" || echo "Tag may already exist"
 
           else
             SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
