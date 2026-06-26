@@ -21,9 +21,6 @@ env:
   SONAR_PROJECT_KEY: cogni-auth-service
 
 jobs:
-  # ──────────────────────────────────────────────────────
-  # PREPARE: Resolve environment and image tag
-  # ──────────────────────────────────────────────────────
   prepare:
     name: Prepare
     runs-on: ubuntu-latest
@@ -47,7 +44,6 @@ jobs:
             echo "is_production=true" >> $GITHUB_OUTPUT
             echo "environment=production" >> $GITHUB_OUTPUT
 
-            # Semantic version: get latest tag, bump patch
             latest_tag=$(git tag -l 'v*.*.*' | sort -V | tail -n 1)
             if [[ -z "$latest_tag" ]]; then latest_tag="v0.0.0"; fi
             echo "Latest tag: $latest_tag"
@@ -56,7 +52,6 @@ jobs:
             IFS='.' read -ra parts <<< "$version"
             major=${parts[0]:-0}; minor=${parts[1]:-0}; patch=${parts[2]:-0}
 
-            # Determine bump level from commit message
             commit_msg=$(git log -1 --pretty=%B)
             if echo "$commit_msg" | grep -qiE "BREAKING CHANGE|!:"; then
               major=$((major + 1)); minor=0; patch=0
@@ -70,19 +65,18 @@ jobs:
             echo "tag=${NEW_TAG}" >> $GITHUB_OUTPUT
 
           else
-            # dev branch: use short SHA
             SHORT_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
             echo "tag=dev-${SHORT_SHA}" >> $GITHUB_OUTPUT
             echo "is_production=false" >> $GITHUB_OUTPUT
             echo "environment=dev" >> $GITHUB_OUTPUT
           fi
 
-  # ──────────────────────────────────────────────────────
-  # BUILD + SCAN + PUSH
-  # ──────────────────────────────────────────────────────
   build-and-push:
     name: Build, Scan & Push
     needs: [prepare]
+    permissions:
+      id-token: write
+      contents: write
     uses: cognidispatch/cognidispatch-reusable-workflows/.github/workflows/_build_push.yml@main
     with:
       image_name: cogni-auth-service
@@ -94,9 +88,6 @@ jobs:
       sonar_project_key: cogni-auth-service
     secrets: inherit
 
-  # ──────────────────────────────────────────────────────
-  # UPDATE HELM CHART (GitOps)
-  # ──────────────────────────────────────────────────────
   update-helm:
     name: Update Helm Chart
     needs: [prepare, build-and-push]
